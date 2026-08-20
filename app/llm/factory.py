@@ -20,11 +20,15 @@ def get_llm_provider() -> LLMProvider:
 def get_embedding_provider() -> EmbeddingProvider:
     settings = get_settings()
     if settings.effective_embedding_provider == "openai":
+        from app.cache.cached_embedding_provider import CachedEmbeddingProvider
         from app.llm.openai_embeddings import OpenAIEmbeddingProvider
 
-        return OpenAIEmbeddingProvider(
+        real = OpenAIEmbeddingProvider(
             api_key=settings.openai_api_key,
             model=settings.openai_embedding_model,
             dimension=settings.embedding_dim,
         )
+        # Cached only for the real (paid, network) provider — the mock provider is already
+        # instant/free, and skipping the wrapper here lets unit tests run without Redis.
+        return CachedEmbeddingProvider(real, model_id=settings.openai_embedding_model)
     return MockEmbeddingProvider(dimension=settings.embedding_dim)

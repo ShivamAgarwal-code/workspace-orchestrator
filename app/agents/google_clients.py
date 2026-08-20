@@ -9,13 +9,24 @@ often."
 """
 import asyncio
 import base64
+from collections.abc import Callable
 from datetime import datetime
 from email.mime.text import MIMEText
-from typing import Any
+from typing import Any, TypeVar
 
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
+from app.cache.google_quota import acquire_google_quota
+
 _RETRYABLE_STATUSES = {403, 429, 500, 503}
+_T = TypeVar("_T")
+
+
+async def _call_google(fn: Callable[[], _T]) -> _T:
+    """Acquires a slot against the shared per-second Google API quota, then runs the blocking
+    googleapiclient call in a worker thread."""
+    await acquire_google_quota()
+    return await asyncio.to_thread(fn)
 
 
 def _is_retryable(exc: BaseException) -> bool:
@@ -65,7 +76,7 @@ class RealGmailClient:
             resp = self._svc.users().messages().list(userId="me", q=query, maxResults=max_results).execute()
             return resp.get("messages", [])
 
-        refs = await asyncio.to_thread(_call)
+        refs = await _call_google(_call)
         return await asyncio.gather(*(self.get_message(r["id"]) for r in refs))
 
     async def get_message(self, message_id: str) -> dict:
@@ -73,7 +84,7 @@ class RealGmailClient:
         def _call():
             return self._svc.users().messages().get(userId="me", id=message_id, format="full").execute()
 
-        raw = await asyncio.to_thread(_call)
+        raw = await _call_google(_call)
         headers = raw.get("payload", {}).get("headers", [])
         return {
             "id": raw["id"],
@@ -99,7 +110,7 @@ class RealGmailClient:
         def _call():
             return self._svc.users().messages().send(userId="me", body=payload).execute()
 
-        return await asyncio.to_thread(_call)
+        return await _call_google(_call)
 
     async def create_draft(self, to: str, subject: str, body: str) -> dict:
         mime = MIMEText(body)
@@ -111,7 +122,7 @@ class RealGmailClient:
         def _call():
             return self._svc.users().drafts().create(userId="me", body={"message": {"raw": raw}}).execute()
 
-        return await asyncio.to_thread(_call)
+        return await _call_google(_call)
 
     async def modify_labels(self, message_id: str, add: list[str] | None = None, remove: list[str] | None = None) -> dict:
         @_retry()
@@ -119,7 +130,7 @@ class RealGmailClient:
             body = {"addLabelIds": add or [], "removeLabelIds": remove or []}
             return self._svc.users().messages().modify(userId="me", id=message_id, body=body).execute()
 
-        return await asyncio.to_thread(_call)
+        return await _call_google(_call)
 
 
 class RealCalendarClient:
@@ -142,7 +153,7 @@ class RealCalendarClient:
             ).execute()
             return resp.get("items", [])
 
-        items = await asyncio.to_thread(_call)
+        items = await _call_google(_call)
         return [self._normalize(i) for i in items]
 
     async def get_event(self, event_id: str) -> dict:
@@ -150,7 +161,7 @@ class RealCalendarClient:
         def _call():
             return self._svc.events().get(calendarId="primary", eventId=event_id).execute()
 
-        return self._normalize(await asyncio.to_thread(_call))
+        return self._normalize(await _call_google(_call))
 
     async def create_event(
         self, summary: str, description: str, start: datetime, end: datetime,
@@ -166,21 +177,21 @@ class RealCalendarClient:
         def _call():
             return self._svc.events().insert(calendarId="primary", body=body).execute()
 
-        return self._normalize(await asyncio.to_thread(_call))
+        return self._normalize(await _call_google(_call))
 
     async def update_event(self, event_id: str, patch: dict) -> dict:
         @_retry()
         def _call():
             return self._svc.events().patch(calendarId="primary", eventId=event_id, body=patch).execute()
 
-        return self._normalize(await asyncio.to_thread(_call))
+        return self._normalize(await _call_google(_call))
 
     async def delete_event(self, event_id: str) -> dict:
         @_retry()
         def _call():
             self._svc.events().delete(calendarId="primary", eventId=event_id).execute()
 
-        await asyncio.to_thread(_call)
+        await _call_google(_call)
         return {"id": event_id, "status": "deleted"}
 
     @staticmethod
@@ -215,7 +226,7 @@ class RealDriveClient:
             resp = self._svc.files().list(q=q, pageSize=max_results, fields=self._FIELDS).execute()
             return resp.get("files", [])
 
-        items = await asyncio.to_thread(_call)
+        items = await _call_google(_call)
         return [self._normalize(i) for i in items]
 
     async def get_file(self, file_id: str) -> dict:
@@ -225,7 +236,7 @@ class RealDriveClient:
                 fileId=file_id, fields="id,name,mimeType,owners,webViewLink,parents,modifiedTime,description"
             ).execute()
 
-        return self._normalize(await asyncio.to_thread(_call))
+        return self._normalize(await _call_google(_call))
 
     async def share_file(self, file_id: str, email: str, role: str = "reader") -> dict:
         @_retry()
@@ -234,7 +245,7 @@ class RealDriveClient:
                 fileId=file_id, body={"type": "user", "role": role, "emailAddress": email}, sendNotificationEmail=False
             ).execute()
 
-        await asyncio.to_thread(_call)
+        await _call_google(_call)
         return await self.get_file(file_id)
 
     async def create_folder(self, name: str, parent_id: str | None = None) -> dict:
@@ -246,7 +257,7 @@ class RealDriveClient:
         def _call():
             return self._svc.files().create(body=body, fields="id,name,mimeType,parents").execute()
 
-        return self._normalize(await asyncio.to_thread(_call))
+        return self._normalize(await _call_google(_call))
 
     async def move_file(self, file_id: str, new_parent_id: str) -> dict:
         current = await self.get_file(file_id)
@@ -259,7 +270,7 @@ class RealDriveClient:
                 fields="id,name,mimeType,parents,modifiedTime",
             ).execute()
 
-        return self._normalize(await asyncio.to_thread(_call))
+        return self._normalize(await _call_google(_call))
 
     @staticmethod
     def _normalize(item: dict) -> dict:
