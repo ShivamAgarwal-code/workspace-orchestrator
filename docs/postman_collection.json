@@ -1,0 +1,78 @@
+{
+  "info": {
+    "name": "Agentic Google Workspace Orchestrator",
+    "description": "Natural-language orchestration over Gmail, Google Calendar, and Google Drive. See API.md for full reference.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000" },
+    { "key": "user_id", "value": "00000000-0000-0000-0000-000000000001" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/health"
+      }
+    },
+    {
+      "name": "Sync",
+      "item": [
+        {
+          "name": "Trigger sync (inline)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "X-User-Id", "value": "{{user_id}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sync/trigger?wait=true",
+              "host": ["{{base_url}}"], "path": ["api", "v1", "sync", "trigger"],
+              "query": [{ "key": "wait", "value": "true" }]
+            }
+          }
+        },
+        {
+          "name": "Trigger sync (async, Celery)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "X-User-Id", "value": "{{user_id}}" }],
+            "url": "{{base_url}}/api/v1/sync/trigger"
+          }
+        },
+        {
+          "name": "Sync status",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-User-Id", "value": "{{user_id}}" }],
+            "url": "{{base_url}}/api/v1/sync/status"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Start Google OAuth",
+          "request": { "method": "GET", "url": "{{base_url}}/api/v1/auth/google" }
+        }
+      ]
+    },
+    {
+      "name": "Sample Queries",
+      "item": [
+        { "name": "1. Calendar next week", "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"},{"key":"X-User-Id","value":"{{user_id}}"}], "url": "{{base_url}}/api/v1/query", "body": { "mode": "raw", "raw": "{\"query\": \"What is on my calendar next week?\"}" } } },
+        { "name": "2. Emails from sarah about budget", "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"},{"key":"X-User-Id","value":"{{user_id}}"}], "url": "{{base_url}}/api/v1/query", "body": { "mode": "raw", "raw": "{\"query\": \"Find emails from sarah@company.com about the budget\"}" } } },
+        { "name": "3. PDFs from last month", "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"},{"key":"X-User-Id","value":"{{user_id}}"}], "url": "{{base_url}}/api/v1/query", "body": { "mode": "raw", "raw": "{\"query\": \"Show me PDFs in Drive from last month\"}" } } },
+        { "name": "4. Cancel Turkish Airlines flight", "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"},{"key":"X-User-Id","value":"{{user_id}}"}], "url": "{{base_url}}/api/v1/query", "body": { "mode": "raw", "raw": "{\"query\": \"Cancel my Turkish Airlines flight\"}" } } },
+        { "name": "5. Prepare for meeting with Acme Corp", "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"},{"key":"X-User-Id","value":"{{user_id}}"}], "url": "{{base_url}}/api/v1/query", "body": { "mode": "raw", "raw": "{\"query\": \"Prepare for tomorrow's client meeting with Acme Corp\"}" } } },
+        { "name": "6. Find conflicts with OOO doc", "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"},{"key":"X-User-Id","value":"{{user_id}}"}], "url": "{{base_url}}/api/v1/query", "body": { "mode": "raw", "raw": "{\"query\": \"Find events next week that conflict with my out-of-office doc\"}" } } },
+        { "name": "7. Calendar next week with john@company.com", "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"},{"key":"X-User-Id","value":"{{user_id}}"}], "url": "{{base_url}}/api/v1/query", "body": { "mode": "raw", "raw": "{\"query\": \"What is on my calendar next week where john@company.com is invited?\"}" } } },
+        { "name": "8. Ambiguous: Move the meeting with John", "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"},{"key":"X-User-Id","value":"{{user_id}}"}], "url": "{{base_url}}/api/v1/query", "body": { "mode": "raw", "raw": "{\"query\": \"Move the meeting with John\"}" } } },
+        { "name": "9a. Reference setup: find emails about the proposal", "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"},{"key":"X-User-Id","value":"{{user_id}}"}], "url": "{{base_url}}/api/v1/query", "body": { "mode": "raw", "raw": "{\"query\": \"Find emails about the proposal\"}" } } },
+        { "name": "9b. Reference resolution: that email about the proposal", "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"},{"key":"X-User-Id","value":"{{user_id}}"}], "url": "{{base_url}}/api/v1/query", "body": { "mode": "raw", "raw": "{\"query\": \"That email about the proposal\"}" } } },
+        { "name": "10. Temporal reasoning: next Tuesday", "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"},{"key":"X-User-Id","value":"{{user_id}}"}], "url": "{{base_url}}/api/v1/query", "body": { "mode": "raw", "raw": "{\"query\": \"What do I have next Tuesday?\"}" } } }
+      ]
+    }
+  ]
+}

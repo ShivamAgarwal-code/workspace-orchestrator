@@ -34,4 +34,34 @@ curl -X POST http://localhost:8000/api/v1/query \
   -d '{"query": "What is on my calendar next week?"}'
 ```
 
-Interactive API docs: http://localhost:8000/docs
+Interactive API docs: http://localhost:8000/docs · More worked examples: [`docs/sample_queries.md`](docs/sample_queries.md)
+
+## Running the tests
+
+```bash
+docker compose exec api pytest              # unit + integration (83 tests)
+docker compose exec api pytest tests/unit   # pure-Python, no services needed
+```
+
+`tests/integration/test_hybrid_search_precision.py` measures Precision@5 (target >0.8) and query
+latency (target <500ms) against the seeded fixture data.
+
+## Project layout
+
+```
+app/
+  intent/        LLM-backed intent classifier (structured output)
+  planner/       Execution DAG builder (per-intent templates + generic fallback)
+  orchestrator/  Parallel DAG execution engine, conversation context, compute nodes
+  agents/        Gmail/Calendar/Drive agents (search/execute/get_context), real + mock clients
+  search/        pgvector hybrid search (vector + full-text, RRF fusion, recency decay)
+  synthesizer/   Aggregates orchestration results into a natural-language response
+  llm/           Provider-agnostic LLM/embedding interfaces (Anthropic/OpenAI + mock)
+  sync/          Celery background sync tasks + beat schedule
+  cache/         Redis caching, rate limiting, Google API quota limiter
+  api/v1/        FastAPI routers (query, auth, sync, health, websocket)
+  db/            SQLAlchemy models + session plumbing
+alembic/         Database migrations
+tests/           Unit + integration test suite
+docs/            Sample queries, ER diagram, Postman/OpenAPI specs
+```
