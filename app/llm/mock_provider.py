@@ -223,6 +223,13 @@ def _synthesize_from_context(context: dict) -> str:
             title = item.get("title") or item.get("subject") or item.get("name") or "(untitled)"
             lines.append(f"- {title}")
 
+    conflicts = (context.get("conflicts") or {}).get("conflicts") if isinstance(context.get("conflicts"), dict) else None
+    if conflicts:
+        lines.append("\nConflicts found:")
+        for c in conflicts:
+            event_title = (c.get("event") or {}).get("title", "(untitled event)")
+            lines.append(f"- \"{event_title}\" overlaps with {c.get('conflicting_document')}")
+
     errors = context.get("errors", {})
     for service, err in errors.items():
         lines.append(f"\nNote: I could not reach {service} ({err}); the rest of the answer above is still complete.")
@@ -233,6 +240,9 @@ def _synthesize_from_context(context: dict) -> str:
 
     if context.get("pending_confirmation"):
         lines.append(f"\nWould you like me to {context['pending_confirmation']}?")
+
+    if context.get("needs_clarification") and context.get("clarification_question"):
+        lines.append(f"\n{context['clarification_question']}")
 
     if not lines:
         lines.append("I could not find anything matching your request.")

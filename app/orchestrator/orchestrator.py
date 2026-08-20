@@ -5,9 +5,7 @@ a parallel Calendar search), enforces a per-node timeout, and blocks all write o
 whenever the classifier flagged the query as ambiguous.
 """
 import asyncio
-import dataclasses
 import time
-from datetime import datetime
 from uuid import UUID
 
 import structlog
@@ -19,6 +17,7 @@ from app.intent.schemas import Intent
 from app.orchestrator import compute
 from app.orchestrator.types import ExecutionReport, NodeResult, NodeStatus
 from app.planner.dag import ExecutionDAG, PlanNode
+from app.utils.serialization import json_safe
 
 logger = structlog.get_logger(__name__)
 
@@ -116,7 +115,7 @@ class ServiceOrchestrator:
             user_id=self._user_id,
             service=node.agent,
             operation=node.action or node.operation,
-            payload=_json_safe(params),
+            payload=json_safe(params),
             result=result,
             error_detail=error,
         ))
@@ -135,19 +134,3 @@ def build_entities_referenced(report: ExecutionReport) -> dict:
             if hasattr(item, "to_dict"):
                 referenced.setdefault(item.service, []).append(item.to_dict())
     return referenced
-
-
-def _json_safe(value):
-    if dataclasses.is_dataclass(value) and not isinstance(value, type):
-        return _json_safe(dataclasses.asdict(value))
-    if isinstance(value, dict):
-        return {k: _json_safe(v) for k, v in value.items()}
-    if isinstance(value, (list, tuple)):
-        return [_json_safe(v) for v in value]
-    if isinstance(value, datetime):
-        return value.isoformat()
-    if isinstance(value, (str, int, float, bool)) or value is None:
-        return value
-    if isinstance(value, NodeResult):
-        return {"node_id": value.node_id, "status": str(value.status), "error": value.error}
-    return str(value)
