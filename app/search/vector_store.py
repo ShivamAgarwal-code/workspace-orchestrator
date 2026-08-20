@@ -183,7 +183,7 @@ async def search_gdrive(
     )
     select_cols = (
         "t.id, t.user_id, t.file_id, t.name, t.mime_type, t.content_preview, t.owners, "
-        "t.web_view_link, t.parent_folder_id, t.modified_at, t.updated_at"
+        "t.web_view_link, t.parent_folder_id, t.modified_at, t.updated_at, t.extra_metadata"
     )
     sql = _hybrid_query("gdrive_cache", "id", select_cols, ts_expr, filter_sql, "modified_at")
     return await _run(

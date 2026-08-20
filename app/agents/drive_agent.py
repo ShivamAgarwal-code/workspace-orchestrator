@@ -45,18 +45,20 @@ class DriveAgent(BaseAgent):
         return [self._to_search_result(r) for r in rows]
 
     def _to_search_result(self, row: dict) -> SearchResult:
+        metadata = {
+            "mime_type": row.get("mime_type"),
+            "owners": row.get("owners"),
+            "web_view_link": row.get("web_view_link"),
+            "parent_folder_id": row.get("parent_folder_id"),
+        }
+        metadata.update(row.get("extra_metadata") or {})
         return SearchResult(
             id=row["file_id"],
             service="gdrive",
             title=row.get("name") or "(untitled)",
             snippet=(row.get("content_preview") or "")[:280],
             score=float(row.get("fused_score") or 0.0),
-            metadata={
-                "mime_type": row.get("mime_type"),
-                "owners": row.get("owners"),
-                "web_view_link": row.get("web_view_link"),
-                "parent_folder_id": row.get("parent_folder_id"),
-            },
+            metadata=metadata,
             timestamp=row.get("modified_at"),
         )
 

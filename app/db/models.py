@@ -150,6 +150,9 @@ class GDriveCache(Base):
     parent_folder_id: Mapped[str | None] = mapped_column(String(255))
     modified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
     content_hash: Mapped[str | None] = mapped_column(String(64))
+    # Structured hints extracted from file content at ingestion time (e.g. an out-of-office doc's
+    # date range) so downstream compute nodes (conflict detection) don't need to re-parse free text.
+    extra_metadata: Mapped[dict | None] = mapped_column(JSONB)
     embedding: Mapped[list[float] | None] = mapped_column(Vector(EMBEDDING_DIM))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
