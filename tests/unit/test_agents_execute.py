@@ -6,7 +6,12 @@ from app.agents.base import AgentError
 from app.agents.drive_agent import DriveAgent
 from app.agents.gcal_agent import GCalAgent
 from app.agents.gmail_agent import GmailAgent
-from app.agents.mock_clients import MockCalendarClient, MockDriveClient, MockGmailClient, reset_mock_store
+from app.agents.mock_clients import (
+    MockCalendarClient,
+    MockDriveClient,
+    MockGmailClient,
+    reset_mock_store,
+)
 
 
 @pytest.fixture

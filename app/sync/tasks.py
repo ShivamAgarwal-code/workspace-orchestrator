@@ -16,7 +16,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.agents.client_factory import get_client_bundle
 from app.db.base import dispose_engine, session_scope
-from app.db.models import GCalCache, GDriveCache, GmailCache, SyncService, SyncState, SyncStatus, User
+from app.db.models import (
+    GCalCache,
+    GDriveCache,
+    GmailCache,
+    SyncService,
+    SyncState,
+    SyncStatus,
+    User,
+)
 from app.llm.base import EmbeddingProvider
 from app.llm.factory import get_embedding_provider
 from app.search.chunking import build_embedding_text

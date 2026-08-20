@@ -1,7 +1,5 @@
 import uuid
 
-import pytest
-
 import app.orchestrator.orchestrator as orchestrator_module
 from app.agents.base import BaseAgent
 from app.intent.schemas import Intent

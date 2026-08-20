@@ -5,9 +5,9 @@ polymorphic table: each has different filterable metadata (sender vs attendees v
 benefit from dedicated btree/GIN indexes, and separate tables let each service's sync job write
 independently without lock contention on a shared table.
 """
-import enum
 import uuid
 from datetime import datetime
+from enum import StrEnum
 
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
@@ -30,13 +30,13 @@ from app.db.base import Base
 EMBEDDING_DIM = get_settings().embedding_dim
 
 
-class SyncService(str, enum.Enum):
+class SyncService(StrEnum):
     gmail = "gmail"
     gcal = "gcal"
     gdrive = "gdrive"
 
 
-class SyncState(str, enum.Enum):
+class SyncState(StrEnum):
     idle = "idle"
     running = "running"
     error = "error"

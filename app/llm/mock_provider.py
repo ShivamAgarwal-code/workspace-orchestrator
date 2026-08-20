@@ -191,7 +191,7 @@ class MockEmbeddingProvider(EmbeddingProvider):
     def _embed_one(self, text: str) -> list[float]:
         vec = [0.0] * self.dimension
         tokens = re.findall(r"[a-z0-9]+", text.lower())
-        for i, token in enumerate(tokens):
+        for i in range(len(tokens)):
             for n in (1, 2):  # unigrams + bigrams for a little local context
                 gram = "_".join(tokens[i : i + n])
                 if len(gram.split("_")) != n:

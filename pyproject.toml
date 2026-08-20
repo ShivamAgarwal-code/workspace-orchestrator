@@ -16,4 +16,7 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
-ignore = ["E501"]
+# E501: line length handled by editor wrapping, not worth enforcing here.
+# B008: FastAPI's Depends()/Header()/Query() as default arguments is the documented, idiomatic
+# pattern (FastAPI evaluates them once per request via its own DI system, not at import time).
+ignore = ["E501", "B008"]

@@ -11,7 +11,6 @@ use the phrase in a scheduling context, though it is a documented, debatable con
 """
 import re
 from datetime import date, datetime, time, timedelta
-
 from zoneinfo import ZoneInfo
 
 _WEEKDAYS = {

@@ -14,7 +14,15 @@ from sqlalchemy import delete
 from app.agents.mock_clients import reset_mock_store
 from app.cache.redis_client import close_redis
 from app.db.base import dispose_engine, session_scope
-from app.db.models import AuditLog, Conversation, GCalCache, GDriveCache, GmailCache, SyncStatus, User
+from app.db.models import (
+    AuditLog,
+    Conversation,
+    GCalCache,
+    GDriveCache,
+    GmailCache,
+    SyncStatus,
+    User,
+)
 
 
 @pytest.fixture(autouse=True)
