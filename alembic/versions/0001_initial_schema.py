@@ -22,8 +22,11 @@ EMBEDDING_DIM = 1536
 def upgrade() -> None:
     op.execute("CREATE EXTENSION IF NOT EXISTS vector")
 
-    sync_service = postgresql.ENUM("gmail", "gcal", "gdrive", name="sync_service")
-    sync_state = postgresql.ENUM("idle", "running", "error", name="sync_state")
+    # create_type=False: the type is created explicitly below via .create(); without this,
+    # SQLAlchemy also tries to auto-create it when the owning column's table is created,
+    # raising "type already exists".
+    sync_service = postgresql.ENUM("gmail", "gcal", "gdrive", name="sync_service", create_type=False)
+    sync_state = postgresql.ENUM("idle", "running", "error", name="sync_state", create_type=False)
     sync_service.create(op.get_bind(), checkfirst=True)
     sync_state.create(op.get_bind(), checkfirst=True)
 

@@ -18,7 +18,7 @@ from app.intent.schemas import Intent
 from app.llm.factory import get_llm_provider
 from app.orchestrator.context import get_recent_conversations, save_conversation
 from app.orchestrator.orchestrator import ServiceOrchestrator, build_entities_referenced
-from app.orchestrator.reporting import split_results_and_errors
+from app.orchestrator.reporting import resolve_final_clarification, split_results_and_errors
 from app.orchestrator.types import NodeResult
 from app.planner.dag import PlanNode
 from app.planner.query_planner import QueryPlanner
@@ -38,6 +38,8 @@ class PipelineResult:
     results: dict[str, list[dict]]
     errors: dict[str, str]
     timing_ms: dict[str, float]
+    needs_clarification: bool
+    clarification_question: str | None
 
 
 async def run_query_pipeline(
@@ -78,11 +80,12 @@ async def run_query_pipeline(
     )
 
     results, errors = split_results_and_errors(dag, report)
+    needs_clarification, clarification_question = resolve_final_clarification(intent, report)
     timing["total_ms"] = (time.monotonic() - t_start) * 1000
 
     logger.info(
         "query_completed", user_id=str(user.id), intent=intent.intent,
-        total_ms=round(timing["total_ms"], 1), needs_clarification=intent.needs_clarification,
+        total_ms=round(timing["total_ms"], 1), needs_clarification=needs_clarification,
     )
 
     return PipelineResult(
@@ -93,4 +96,6 @@ async def run_query_pipeline(
         results=results,
         errors=errors,
         timing_ms={k: round(v, 1) for k, v in timing.items()},
+        needs_clarification=needs_clarification,
+        clarification_question=clarification_question,
     )

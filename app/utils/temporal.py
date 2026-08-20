@@ -39,6 +39,22 @@ def resolve_date_phrase(phrase: str | None, now_utc: datetime, tz_name: str = "U
         _, e = day_bounds(monday + timedelta(days=6))
         return s, e
 
+    def month_bounds(year: int, month: int) -> tuple[datetime, datetime]:
+        first = date(year, month, 1)
+        next_first = date(year + 1, 1, 1) if month == 12 else date(year, month + 1, 1)
+        s, _ = day_bounds(first)
+        _, e = day_bounds(next_first - timedelta(days=1))
+        return s, e
+
+    if phrase in ("this month", "current month"):
+        return month_bounds(local_now.year, local_now.month)
+    if phrase in ("last month", "previous month"):
+        y, m = (local_now.year - 1, 12) if local_now.month == 1 else (local_now.year, local_now.month - 1)
+        return month_bounds(y, m)
+    if phrase == "next month":
+        y, m = (local_now.year + 1, 1) if local_now.month == 12 else (local_now.year, local_now.month + 1)
+        return month_bounds(y, m)
+
     if phrase == "today":
         return day_bounds(local_now.date())
     if phrase == "tomorrow":

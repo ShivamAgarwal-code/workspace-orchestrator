@@ -13,3 +13,4 @@ htmlcov/
 dist/
 build/
 docker/pgdata/
+celerybeat-schedule

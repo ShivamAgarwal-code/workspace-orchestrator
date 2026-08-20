@@ -4,6 +4,7 @@ Kept separate from the agents so plan nodes that are pure data transforms over a
 results (cross-referencing calendar events against a document's date range, resolving "that
 email" against conversation history) don't need a fake service client.
 """
+import re
 from collections.abc import Awaitable, Callable
 from dataclasses import asdict
 from datetime import datetime
@@ -55,7 +56,9 @@ async def resolve_reference(params: dict) -> dict:
     query = (params.get("query") or "").lower()
     history = params.get("conversation_history") or []
 
-    keywords = [w for w in query.replace("that", "").replace("email", "").split() if len(w) > 3]
+    stopwords = {"that", "this", "email", "about", "what", "who", "sent", "the", "was", "did"}
+    words = re.findall(r"[a-z0-9]+", query)
+    keywords = [w for w in words if len(w) > 3 and w not in stopwords]
 
     best_match = None
     for turn in reversed(history):  # most recent first

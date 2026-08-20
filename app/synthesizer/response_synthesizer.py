@@ -9,7 +9,7 @@ import json
 
 from app.intent.schemas import Intent
 from app.llm.base import ChatMessage, LLMProvider
-from app.orchestrator.reporting import split_results_and_errors
+from app.orchestrator.reporting import resolve_final_clarification, split_results_and_errors
 from app.orchestrator.types import ExecutionReport, NodeStatus
 from app.planner.dag import ExecutionDAG
 from app.utils.serialization import json_safe
@@ -23,6 +23,8 @@ Rules:
 - Only state facts present in the JSON context. Never invent emails, events, files, or dates.
 - If `clarification_question` is present, ask exactly that question and do not take further \
   action or make assumptions about which item the user meant.
+- If `referenced_item` is present, it is the full content of an item resolved from a vague \
+  reference in the query (e.g. "that email") — answer using its contents directly.
 - If `errors` is non-empty, briefly and gracefully note which service could not be reached, but \
   still present whatever results ARE available — a partial answer beats no answer.
 - If `pending_confirmation` is present (e.g. a drafted-but-not-sent email), end by asking the \
@@ -59,14 +61,26 @@ class ResponseSynthesizer:
             if node and node.id == "detect_conflicts" and result.status == NodeStatus.ok:
                 conflict_data = result.data
 
+        # get_context nodes (e.g. resolving "that email" to its full content) return a single
+        # dict, not a list[SearchResult] — split_results_and_errors only handles the latter, so
+        # surface these separately rather than silently dropping the one thing the user asked for.
+        referenced_item = None
+        for node_id, result in report.results.items():
+            node = dag.nodes.get(node_id)
+            if node and node.operation == "get_context" and result.status == NodeStatus.ok and result.data:
+                referenced_item = result.data
+
+        needs_clarification, clarification_question = resolve_final_clarification(intent, report)
+
         return json_safe({
             "user_query": query,
             "intent": intent.intent,
             "results": results,
+            "referenced_item": referenced_item,
             "errors": errors,
             "actions_taken": report.actions_taken,
             "pending_confirmation": pending_confirmation,
             "conflicts": conflict_data,
-            "needs_clarification": intent.needs_clarification,
-            "clarification_question": intent.clarification_question,
+            "needs_clarification": needs_clarification,
+            "clarification_question": clarification_question,
         })

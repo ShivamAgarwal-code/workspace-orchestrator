@@ -175,7 +175,7 @@ class QueryPlanner:
         for service in services:
             dag.add_node(PlanNode(
                 id=f"search_{service}", agent=service, operation="search",
-                build_params=lambda i, r: {"query": i.raw_query, "limit": 10},
+                build_params=lambda i, r: {"query": i.raw_query, "filters": i.entities, "limit": 10},
                 description=f"Fallback search of {service} for a query without a specific template.",
             ))
         return dag

@@ -20,7 +20,9 @@ AIRLINES = [
 
 _EMAIL_RE = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
 _DATE_PHRASE_RE = re.compile(
-    r"\b(today|tomorrow|yesterday|next week|last week|this week|"
+    r"\b(today|tomorrow|yesterday|"
+    r"next week|last week|this week|"
+    r"next month|last month|this month|"
     r"next (?:mon|tues|wednes|thurs|fri|satur|sun)day|"
     r"(?:mon|tues|wednes|thurs|fri|satur|sun)day)\b",
     re.IGNORECASE,
@@ -40,8 +42,13 @@ class MockLLMProvider(LLMProvider):
         tool_name: str = "emit_result",
         max_tokens: int = 1024,
     ) -> dict:
-        query = messages[-1].content if messages else ""
+        prompt = messages[-1].content if messages else ""
         if tool_name == "classify_intent":
+            # The prompt is "<conversation history>\n\nCurrent time: ...\n\nUser query: <query>" —
+            # classify only the current turn, never the history block (a prior turn's "cancel my
+            # flight" line must not leak the word "cancel" into an unrelated later query).
+            marker = "User query: "
+            query = prompt.split(marker, 1)[1] if marker in prompt else prompt
             return self._classify_intent(query)
         # Generic fallback for any other forced-schema call: produce a minimally valid
         # object by filling required fields with type-appropriate zero values.
@@ -92,6 +99,11 @@ class MockLLMProvider(LLMProvider):
                 entities["file_type"] = keyword
                 break
 
+        if not services and entities.get("date_phrase") and not entities.get("file_type"):
+            # A bare date/time question ("what do I have next Tuesday?") with no other service
+            # keyword is, in practice, almost always about the calendar.
+            services = ["gcal"]
+
         intent, steps, needs_clarification, clarification_question = self._route(q, services, entities)
 
         if not services:
@@ -141,13 +153,18 @@ class MockLLMProvider(LLMProvider):
                 None,
             )
         if "that email" in q or ("email" in q and "about" in q and len(q.split()) < 8 and "find" not in q):
+            # needs_clarification is left False here even though "that email" is inherently vague:
+            # whether it actually resolves depends on conversation history, which only the
+            # resolve_reference compute node (running after this classification) can check. The
+            # synthesizer asks the clarifying question itself if that node reports unresolved,
+            # rather than the classifier guessing blind.
             return (
                 "reference_lookup",
                 ["resolve_conversation_reference", "get_email_context"],
-                "that" in q,
-                "Which email are you referring to? Could you share a keyword or the sender?" if "that" in q else None,
+                False,
+                None,
             )
-        if "gcal" in services and ("what's on" in q or "what is on" in q or "show me" in q or "next week" in q):
+        if "gcal" in services and "gmail" not in services and "gdrive" not in services:
             return "search_calendar", ["search_calendar_events"], False, None
         if "gmail" in services and "gcal" not in services and "gdrive" not in services:
             return "search_email", ["search_gmail"], False, None
@@ -222,6 +239,15 @@ def _synthesize_from_context(context: dict) -> str:
         for item in items[:5]:
             title = item.get("title") or item.get("subject") or item.get("name") or "(untitled)"
             lines.append(f"- {title}")
+
+    referenced = context.get("referenced_item")
+    if referenced:
+        subject = referenced.get("subject") or referenced.get("title") or "(untitled)"
+        sender = referenced.get("from") or referenced.get("sender")
+        body = (referenced.get("body") or referenced.get("description") or "").strip()
+        lines.append(f"\n\"{subject}\"" + (f" from {sender}" if sender else "") + ":")
+        if body:
+            lines.append(body[:500])
 
     conflicts = (context.get("conflicts") or {}).get("conflicts") if isinstance(context.get("conflicts"), dict) else None
     if conflicts:

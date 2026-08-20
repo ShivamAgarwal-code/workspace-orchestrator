@@ -15,7 +15,7 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.agents.client_factory import get_client_bundle
-from app.db.base import session_scope
+from app.db.base import get_engine, session_scope
 from app.db.models import GCalCache, GDriveCache, GmailCache, SyncService, SyncState, SyncStatus, User
 from app.llm.base import EmbeddingProvider
 from app.llm.factory import get_embedding_provider
@@ -31,14 +31,31 @@ def _hash(text: str) -> str:
     return hashlib.sha256(text.encode()).hexdigest()
 
 
+def _run_task(coro):
+    """Each Celery task gets its own asyncio.run() (its own event loop), but the async SQLAlchemy
+    engine is a lazily-created, process-wide singleton (see app.db.base.get_engine) whose asyncpg
+    connections are bound to whatever loop created them. Without disposing the pool at the end of
+    every task, the *next* task's new loop reuses connections from the *previous* loop and dies
+    with "Future attached to a different loop". Disposing here (still inside the owning loop)
+    closes them cleanly; the pool lazily reconnects under the next task's loop on next use.
+    """
+    async def _wrapped():
+        try:
+            return await coro
+        finally:
+            await get_engine().dispose()
+
+    return asyncio.run(_wrapped())
+
+
 @celery_app.task(name="app.sync.tasks.sync_all_users")
 def sync_all_users() -> dict:
-    return asyncio.run(_sync_all_users())
+    return _run_task(_sync_all_users())
 
 
 @celery_app.task(name="app.sync.tasks.sync_user")
 def sync_user_task(user_id: str) -> dict:
-    return asyncio.run(sync_user_now(uuid.UUID(user_id)))
+    return _run_task(sync_user_now(uuid.UUID(user_id)))
 
 
 async def _sync_all_users() -> dict:

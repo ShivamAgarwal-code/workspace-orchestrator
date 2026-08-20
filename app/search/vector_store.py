@@ -120,9 +120,9 @@ async def search_gmail(
 ) -> list[dict]:
     ts_expr = "to_tsvector('english', coalesce(subject,'') || ' ' || coalesce(body_preview,''))"
     filter_sql = (
-        "AND (:sender::text IS NULL OR sender ILIKE :sender) "
-        "AND (:since::timestamptz IS NULL OR received_at >= :since) "
-        "AND (:until::timestamptz IS NULL OR received_at <= :until)"
+        "AND (CAST(:sender AS text) IS NULL OR sender ILIKE :sender) "
+        "AND (CAST(:since AS timestamptz) IS NULL OR received_at >= :since) "
+        "AND (CAST(:until AS timestamptz) IS NULL OR received_at <= :until)"
     )
     select_cols = (
         "t.id, t.user_id, t.email_id, t.thread_id, t.subject, t.body_preview, t.sender, "
@@ -150,9 +150,9 @@ async def search_gcal(
         "|| ' ' || coalesce(location,''))"
     )
     filter_sql = (
-        "AND (:attendee::text IS NULL OR :attendee = ANY(attendees)) "
-        "AND (:since::timestamptz IS NULL OR start_time >= :since) "
-        "AND (:until::timestamptz IS NULL OR start_time <= :until)"
+        "AND (CAST(:attendee AS text) IS NULL OR :attendee = ANY(attendees)) "
+        "AND (CAST(:since AS timestamptz) IS NULL OR start_time >= :since) "
+        "AND (CAST(:until AS timestamptz) IS NULL OR start_time <= :until)"
     )
     select_cols = (
         "t.id, t.user_id, t.event_id, t.calendar_id, t.title, t.description, t.location, "
@@ -177,9 +177,9 @@ async def search_gdrive(
 ) -> list[dict]:
     ts_expr = "to_tsvector('english', coalesce(name,'') || ' ' || coalesce(content_preview,''))"
     filter_sql = (
-        "AND (:mime_type::text IS NULL OR mime_type = :mime_type) "
-        "AND (:since::timestamptz IS NULL OR modified_at >= :since) "
-        "AND (:until::timestamptz IS NULL OR modified_at <= :until)"
+        "AND (CAST(:mime_type AS text) IS NULL OR mime_type = :mime_type) "
+        "AND (CAST(:since AS timestamptz) IS NULL OR modified_at >= :since) "
+        "AND (CAST(:until AS timestamptz) IS NULL OR modified_at <= :until)"
     )
     select_cols = (
         "t.id, t.user_id, t.file_id, t.name, t.mime_type, t.content_preview, t.owners, "
