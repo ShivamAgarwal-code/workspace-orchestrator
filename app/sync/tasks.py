@@ -15,7 +15,7 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.agents.client_factory import get_client_bundle
-from app.db.base import get_engine, session_scope
+from app.db.base import dispose_engine, session_scope
 from app.db.models import GCalCache, GDriveCache, GmailCache, SyncService, SyncState, SyncStatus, User
 from app.llm.base import EmbeddingProvider
 from app.llm.factory import get_embedding_provider
@@ -43,7 +43,7 @@ def _run_task(coro):
         try:
             return await coro
         finally:
-            await get_engine().dispose()
+            await dispose_engine()
 
     return asyncio.run(_wrapped())
 

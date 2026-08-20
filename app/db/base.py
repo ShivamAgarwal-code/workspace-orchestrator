@@ -31,6 +31,19 @@ def get_session_factory() -> async_sessionmaker[AsyncSession]:
     return _session_factory
 
 
+async def dispose_engine() -> None:
+    """Closes the pooled connections and drops the singleton so the next get_engine() call
+    creates a fresh engine bound to whatever event loop is current. Needed by Celery tasks (each
+    gets its own asyncio.run()/event loop) and by the test suite (pytest-asyncio gives each test
+    function its own loop) — an asyncpg connection created under one loop cannot be reused from
+    another. Production (uvicorn) never calls this: it keeps one loop for the process lifetime."""
+    global _engine, _session_factory
+    if _engine is not None:
+        await _engine.dispose()
+    _engine = None
+    _session_factory = None
+
+
 async def get_db() -> AsyncIterator[AsyncSession]:
     """FastAPI dependency yielding a request-scoped session."""
     async with get_session_factory()() as session:

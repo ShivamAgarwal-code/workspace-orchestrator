@@ -134,7 +134,8 @@ class MockCalendarClient:
         events = _mailbox(self.user_id)["events"]
         for i, e in enumerate(events):
             if e["id"] == event_id:
-                return events.pop(i)
+                events.pop(i)
+                return {"id": event_id, "status": "deleted"}
         raise KeyError(f"event {event_id} not found")
 
 
