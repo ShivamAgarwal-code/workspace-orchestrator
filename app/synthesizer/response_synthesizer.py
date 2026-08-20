@@ -9,6 +9,7 @@ import json
 
 from app.intent.schemas import Intent
 from app.llm.base import ChatMessage, LLMProvider
+from app.orchestrator.reporting import split_results_and_errors
 from app.orchestrator.types import ExecutionReport, NodeStatus
 from app.planner.dag import ExecutionDAG
 from app.utils.serialization import json_safe
@@ -44,19 +45,7 @@ class ResponseSynthesizer:
         )
 
     def _build_context(self, query: str, intent: Intent, dag: ExecutionDAG, report: ExecutionReport) -> dict:
-        results: dict[str, list[dict]] = {"gmail": [], "gcal": [], "gdrive": []}
-        errors: dict[str, str] = {}
-
-        for node_id, result in report.results.items():
-            node = dag.nodes.get(node_id)
-            service = node.agent if node else "unknown"
-
-            if result.status == NodeStatus.ok and isinstance(result.data, list):
-                for item in result.data:
-                    if hasattr(item, "to_dict") and item.service in results:
-                        results[item.service].append(item.to_dict())
-            elif result.status == NodeStatus.error and service in results:
-                errors[service] = result.error or "unknown error"
+        results, errors = split_results_and_errors(dag, report)
 
         pending_confirmation = None
         for node_id, result in report.results.items():

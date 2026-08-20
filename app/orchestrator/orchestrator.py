@@ -37,7 +37,12 @@ class ServiceOrchestrator:
         self._user_id = user_id
         self._conversation_history = conversation_history or []
 
-    async def run(self, dag: ExecutionDAG, intent: Intent) -> ExecutionReport:
+    async def run(
+        self,
+        dag: ExecutionDAG,
+        intent: Intent,
+        on_node_complete=None,  # optional async callback(node: PlanNode, result: NodeResult) -> None, for WS streaming
+    ) -> ExecutionReport:
         report = ExecutionReport()
         for layer in dag.topological_layers():
             outcomes = await asyncio.gather(*(self._run_node(node, intent, report) for node in layer))
@@ -45,6 +50,8 @@ class ServiceOrchestrator:
                 report.results[node.id] = result
                 if result.status == NodeStatus.ok and node.operation == "execute":
                     report.actions_taken.append(node.description or f"{node.agent}.{node.action}")
+                if on_node_complete is not None:
+                    await on_node_complete(node, result)
         return report
 
     async def _run_node(self, node: PlanNode, intent: Intent, report: ExecutionReport) -> NodeResult:

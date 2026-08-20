@@ -9,12 +9,10 @@ import uuid
 
 from sqlalchemy import select
 
+from app.constants import DEMO_USER_EMAIL, DEMO_USER_ID
 from app.db.base import session_scope
 from app.db.models import User
 from app.sync.tasks import sync_user_now
-
-DEMO_USER_ID = uuid.UUID("00000000-0000-0000-0000-000000000001")
-DEMO_USER_EMAIL = "michel@resilt.com"
 
 
 async def ensure_demo_user() -> uuid.UUID:
