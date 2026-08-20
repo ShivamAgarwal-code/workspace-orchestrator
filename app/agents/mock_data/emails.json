@@ -1,0 +1,112 @@
+[
+  {
+    "id": "msg_tk_booking",
+    "thread_id": "thread_tk_booking",
+    "subject": "Your Turkish Airlines Booking Confirmation - TK1234",
+    "from": "noreply@turkishairlines.com",
+    "to": ["michel@resilt.com"],
+    "body": "Dear Michel,\n\nYour booking is confirmed.\n\nBooking Reference: TK1234\nFlight: Istanbul (IST) to New York (JFK)\nDeparture: Nov 5, 2026, 10:30 AM local time\nPassenger: Michel\n\nFor cancellations or changes, reply to this email or contact support@turkishairlines.com.\n\nThank you for choosing Turkish Airlines.",
+    "labels": ["INBOX", "IMPORTANT"],
+    "received_offset_days": -18,
+    "received_hour": 9
+  },
+  {
+    "id": "msg_tk_receipt",
+    "thread_id": "thread_tk_booking",
+    "subject": "Re: Your Turkish Airlines Booking Confirmation - TK1234",
+    "from": "billing@turkishairlines.com",
+    "to": ["michel@resilt.com"],
+    "body": "Payment receipt for booking TK1234. Amount charged: $612.40. This is an automated confirmation.",
+    "labels": ["INBOX"],
+    "received_offset_days": -18,
+    "received_hour": 9
+  },
+  {
+    "id": "msg_acme_roadmap",
+    "thread_id": "thread_acme_roadmap",
+    "subject": "Re: Q3 Roadmap Review - Acme Corp",
+    "from": "jane.doe@acmecorp.com",
+    "to": ["michel@resilt.com"],
+    "body": "Hi Michel,\n\nLooking forward to our meeting to review the Q3 roadmap and the proposal we discussed. I'll bring the updated deck. Let me know if you need anything from our side beforehand.\n\nBest,\nJane",
+    "labels": ["INBOX", "IMPORTANT"],
+    "received_offset_days": -1,
+    "received_hour": 14
+  },
+  {
+    "id": "msg_acme_proposal",
+    "thread_id": "thread_acme_roadmap",
+    "subject": "The Proposal - Draft v2 (Acme Corp)",
+    "from": "jane.doe@acmecorp.com",
+    "to": ["michel@resilt.com"],
+    "body": "Attaching draft v2 of the proposal ahead of tomorrow's meeting. Key changes: revised pricing tier, updated timeline for Q3 delivery. Let me know your thoughts.",
+    "labels": ["INBOX"],
+    "received_offset_days": -2,
+    "received_hour": 11
+  },
+  {
+    "id": "msg_budget_1",
+    "thread_id": "thread_budget",
+    "subject": "Q3 Budget Review - action needed",
+    "from": "sarah@company.com",
+    "to": ["michel@resilt.com"],
+    "body": "Hi Michel, can you review the attached Q3 budget numbers before Friday? Marketing spend is trending 8% over forecast.",
+    "labels": ["INBOX"],
+    "received_offset_days": -6,
+    "received_hour": 10
+  },
+  {
+    "id": "msg_budget_2",
+    "thread_id": "thread_budget",
+    "subject": "Re: Q3 Budget Review - action needed",
+    "from": "sarah@company.com",
+    "to": ["michel@resilt.com"],
+    "body": "Following up on the budget review - engineering headcount budget also needs your sign-off this week.",
+    "labels": ["INBOX"],
+    "received_offset_days": -4,
+    "received_hour": 16
+  },
+  {
+    "id": "msg_john_smith_sync",
+    "thread_id": "thread_john_smith",
+    "subject": "1:1 sync - project timeline",
+    "from": "john.smith@company.com",
+    "to": ["michel@resilt.com"],
+    "body": "Hey, can we sync on the project timeline this week? I have a few blockers to discuss.",
+    "labels": ["INBOX"],
+    "received_offset_days": -3,
+    "received_hour": 9
+  },
+  {
+    "id": "msg_john_doe_partner",
+    "thread_id": "thread_john_doe",
+    "subject": "Partnership check-in",
+    "from": "john.doe@partner.com",
+    "to": ["michel@resilt.com"],
+    "body": "Following up on our partnership discussion, would love to grab time this week to check in.",
+    "labels": ["INBOX"],
+    "received_offset_days": -2,
+    "received_hour": 13
+  },
+  {
+    "id": "msg_ooo_notice",
+    "thread_id": "thread_ooo",
+    "subject": "Team out-of-office next week",
+    "from": "hr@company.com",
+    "to": ["michel@resilt.com"],
+    "body": "Reminder: several team members are out of office next week per the shared OOO schedule doc. Please plan meetings accordingly.",
+    "labels": ["INBOX"],
+    "received_offset_days": -1,
+    "received_hour": 8
+  },
+  {
+    "id": "msg_newsletter",
+    "thread_id": "thread_newsletter",
+    "subject": "Weekly Industry Digest",
+    "from": "digest@newsletter.io",
+    "to": ["michel@resilt.com"],
+    "body": "This week in tech: cloud spending trends, new AI regulations, and more.",
+    "labels": ["INBOX", "CATEGORY_PROMOTIONS"],
+    "received_offset_days": -2,
+    "received_hour": 7
+  }
+]

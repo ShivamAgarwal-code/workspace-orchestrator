@@ -87,6 +87,10 @@ class MockLLMProvider(LLMProvider):
             entities["company"] = company_match.group(1)
         elif person_match:
             entities["person"] = person_match.group(1)
+        for keyword in ("pdf", "doc", "sheet", "spreadsheet", "slide", "presentation", "image", "photo"):
+            if keyword in q:
+                entities["file_type"] = keyword
+                break
 
         intent, steps, needs_clarification, clarification_question = self._route(q, services, entities)
 

@@ -1,0 +1,74 @@
+[
+  {
+    "id": "file_acme_proposal",
+    "name": "Acme Corp - Proposal v2.pdf",
+    "mime_type": "application/pdf",
+    "content_preview": "Proposal for Acme Corp Q3 engagement. Revised pricing tier, updated delivery timeline, and roadmap alignment with the Q3 roadmap review.",
+    "owners": ["michel@resilt.com"],
+    "web_view_link": "https://drive.google.com/file/d/file_acme_proposal/view",
+    "parent_folder_id": "folder_acme",
+    "modified_offset_days": -2
+  },
+  {
+    "id": "file_acme_deck",
+    "name": "Acme Corp - Q3 Roadmap Deck.pdf",
+    "mime_type": "application/pdf",
+    "content_preview": "Q3 roadmap presentation for Acme Corp: milestones, delivery dates, and resourcing plan.",
+    "owners": ["michel@resilt.com"],
+    "web_view_link": "https://drive.google.com/file/d/file_acme_deck/view",
+    "parent_folder_id": "folder_acme",
+    "modified_offset_days": -3
+  },
+  {
+    "id": "file_ooo_schedule",
+    "name": "Team Out-of-Office Schedule.pdf",
+    "mime_type": "application/pdf",
+    "content_preview": "Team out-of-office schedule. Several engineers are out starting in a few days for approximately three days; please avoid scheduling critical meetings during that window.",
+    "owners": ["hr@company.com"],
+    "web_view_link": "https://drive.google.com/file/d/file_ooo_schedule/view",
+    "parent_folder_id": "folder_hr",
+    "modified_offset_days": -1,
+    "ooo_start_offset_days": 3,
+    "ooo_end_offset_days": 5
+  },
+  {
+    "id": "file_budget_q3",
+    "name": "Q3 Budget Numbers.xlsx",
+    "mime_type": "application/vnd.google-apps.spreadsheet",
+    "content_preview": "Q3 budget breakdown by department: marketing, engineering, sales. Marketing trending 8% over forecast.",
+    "owners": ["sarah@company.com"],
+    "web_view_link": "https://drive.google.com/file/d/file_budget_q3/view",
+    "parent_folder_id": "folder_finance",
+    "modified_offset_days": -6
+  },
+  {
+    "id": "file_old_report_1",
+    "name": "Monthly Ops Report - Prior Month.pdf",
+    "mime_type": "application/pdf",
+    "content_preview": "Monthly operations report covering incident counts, uptime, and support ticket volume.",
+    "owners": ["michel@resilt.com"],
+    "web_view_link": "https://drive.google.com/file/d/file_old_report_1/view",
+    "parent_folder_id": "folder_ops",
+    "modified_offset_days": -32
+  },
+  {
+    "id": "file_old_report_2",
+    "name": "Vendor Contract Renewal.pdf",
+    "mime_type": "application/pdf",
+    "content_preview": "Vendor contract renewal terms and pricing for the upcoming annual period.",
+    "owners": ["michel@resilt.com"],
+    "web_view_link": "https://drive.google.com/file/d/file_old_report_2/view",
+    "parent_folder_id": "folder_ops",
+    "modified_offset_days": -28
+  },
+  {
+    "id": "file_team_photo",
+    "name": "Offsite Photo.jpg",
+    "mime_type": "image/jpeg",
+    "content_preview": "Team offsite group photo.",
+    "owners": ["michel@resilt.com"],
+    "web_view_link": "https://drive.google.com/file/d/file_team_photo/view",
+    "parent_folder_id": "folder_misc",
+    "modified_offset_days": -10
+  }
+]
